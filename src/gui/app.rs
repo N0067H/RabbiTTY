@@ -1,7 +1,8 @@
+use crate::gui::components::{button_primary, button_secondary, panel, text_input_default};
 use crate::gui::render::RenderConfig;
 use crate::gui::tab::{TerminalSession, TerminalTab};
 use iced::widget::text::LineHeight;
-use iced::widget::{button, column, container, row, scrollable, text, text_input};
+use iced::widget::{column, row, scrollable, text};
 use iced::{Element, Length, Subscription, Task, time};
 use std::time::Duration;
 
@@ -68,8 +69,16 @@ impl App {
             .iter()
             .enumerate()
             .map(|(index, tab)| {
-                let label = text(&tab.title).size(16);
-                button(label).on_press(Message::TabSelected(index)).into()
+                let label = tab.title.as_str();
+                if index == self.active_tab {
+                    button_primary(label)
+                        .on_press(Message::TabSelected(index))
+                        .into()
+                } else {
+                    button_secondary(label)
+                        .on_press(Message::TabSelected(index))
+                        .into()
+                }
             })
             .collect();
 
@@ -83,17 +92,17 @@ impl App {
         let scroll = scrollable(
             text(rendered)
                 .size(15)
-                .line_height(LineHeight::Relative(1.2)),
+                .line_height(LineHeight::Relative(1.2))
+                .font(iced::font::Font::MONOSPACE), // Use monospace font
         )
         .height(Length::Fill)
         .width(Length::Fill);
 
-        let input_bar = text_input("type and hit enter", &active_tab.input)
+        let input_bar = text_input_default("type and hit enter", &active_tab.input)
             .on_input(Message::InputChanged)
-            .on_submit(Message::SubmitInput)
-            .padding(8);
+            .on_submit(Message::SubmitInput);
 
-        let send_button = button("Send").on_press(Message::SubmitInput);
+        let send_button = button_primary("Send").on_press(Message::SubmitInput);
 
         let input_row = row(vec![input_bar.into(), send_button.into()]).spacing(8);
 
@@ -112,15 +121,10 @@ impl App {
         .spacing(8)
         .padding(12);
 
-        column(vec![
-            tab_row.into(),
-            container(content)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .into(),
-        ])
-        .height(Length::Fill)
-        .into()
+        panel(column(vec![tab_row.into(), content.into()]).height(Length::Fill))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
