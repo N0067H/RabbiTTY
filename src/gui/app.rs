@@ -4,7 +4,7 @@ use crate::gui::tab::TerminalTab;
 use iced::keyboard::{self, Key, Modifiers};
 use iced::widget::text::LineHeight;
 use iced::widget::{column, row, scrollable, text};
-use iced::{Element, Event, Length, Subscription, Task, event, time};
+use iced::{Element, Event, Length, Subscription, Task, event, time, window};
 use std::time::Duration;
 
 #[derive(Debug, Clone)]
@@ -16,6 +16,7 @@ pub enum Message {
         modifiers: Modifiers,
         text: Option<String>,
     },
+    Exit,
 }
 
 pub struct App {
@@ -57,6 +58,11 @@ impl App {
                 if let Some(tab) = self.tabs.get_mut(self.active_tab) {
                     tab.handle_key(&key, modifiers, text.as_deref());
                 }
+            }
+            Message::Exit => {
+                // Graceful shutdown
+                self.tabs.clear();
+                return window::get_latest().and_then(window::close);
             }
             _ => {}
         }
@@ -124,22 +130,19 @@ impl App {
             // Ticking
             time::every(Duration::from_millis(30)).map(|_| Message::Tick),
             // Iced events (maybe will be added?)
-            event::listen_with(|event, _status, _id| {
-                if let Event::Keyboard(keyboard::Event::KeyPressed {
+            event::listen_with(|event, _status, _id| match event {
+                Event::Window(window::Event::CloseRequested) => Some(Message::Exit),
+                Event::Keyboard(keyboard::Event::KeyPressed {
                     key,
                     modifiers,
                     text,
                     ..
-                }) = event
-                {
-                    Some(Message::KeyPressed {
-                        key,
-                        modifiers,
-                        text: text.map(|s| s.to_string()),
-                    })
-                } else {
-                    None
-                }
+                }) => Some(Message::KeyPressed {
+                    key,
+                    modifiers,
+                    text: text.map(|s| s.to_string()),
+                }),
+                _ => None,
             }),
         ])
     }
