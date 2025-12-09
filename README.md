@@ -6,3 +6,8 @@ Rabbitty is a terminal emulator chasing foot-level memory thrift and cross-platf
 - Fast paths: low-latency rendering and input.
 - Cross-platform: consistent on macOS, Linux, Windows.
 - Featureful and fancy: tabs, themes, and modern UX without bloat.
+
+## Supported-OS
+
+- Mac (tested)
+- Windows 11 (tested)
