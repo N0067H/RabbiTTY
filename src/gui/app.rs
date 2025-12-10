@@ -1,4 +1,4 @@
-use crate::gui::components::{button_secondary, panel, tab_bar};
+use crate::gui::components::{button_primary, button_secondary, panel, tab_bar};
 use crate::gui::tab::{ShellKind, TerminalTab};
 use iced::keyboard::{self, Key, Modifiers};
 use iced::widget::text::LineHeight;
